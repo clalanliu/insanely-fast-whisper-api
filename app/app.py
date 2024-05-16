@@ -143,6 +143,7 @@ def root(
     is_async: bool = Body(default=False),
     managed_task_id: str | None = Body(default=None),
 ):
+    '''
     if url.lower().startswith("http") is False:
         raise HTTPException(status_code=400, detail="Invalid URL")
 
@@ -153,7 +154,7 @@ def root(
         raise HTTPException(
             status_code=400, detail="Webhook is required for async tasks"
         )
-
+    '''
     task_id = managed_task_id if managed_task_id is not None else str(uuid.uuid4())
 
     try:
