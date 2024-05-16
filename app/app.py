@@ -6,6 +6,7 @@ from fastapi import (
     Body,
     BackgroundTasks,
     Request,
+    UploadFile
 )
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
