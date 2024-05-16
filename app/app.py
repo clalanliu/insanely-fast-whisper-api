@@ -32,7 +32,7 @@ fly_machine_id = os.environ.get(
 processor = AutoProcessor.from_pretrained("distil-whisper/distil-large-v3")
 pipe = pipeline(
     "automatic-speech-recognition",
-    model=AutoModelForSpeechSeq2Seq.from_pretrained("distil-whisper/distil-large-v3", use_safetensors=True, attn_implementation="flash_attention_2"),
+    model=AutoModelForSpeechSeq2Seq.from_pretrained("distil-whisper/distil-large-v3", torch_dtype=torch.float16, use_safetensors=True, attn_implementation="flash_attention_2"),
     feature_extractor=processor.feature_extractor,
     tokenizer=processor.tokenizer,
     max_new_tokens=128,
