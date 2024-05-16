@@ -10,7 +10,7 @@ from fastapi import (
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 import torch
-from transformers import pipeline
+from transformers import pipeline, AutoModelForSpeechSeq2Seq
 from .diarization_pipeline import diarize
 import requests
 import asyncio
