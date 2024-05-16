@@ -1,5 +1,17 @@
  ```
+# url
 curl -X POST 127.0.0.1:8000  -H "Content-Type: application/json" -d '{ "url": "http://...."}'
+
+# file
+time curl -X POST "127.0.0.1:8000/" \
+    -H "Content-Type: multipart/form-data" \
+    -F "file=@/home/ubuntu/test.wav" \
+    -F "task=transcribe" \
+    -F "language=en" \
+    -F "batch_size=64" \
+    -F "timestamp=chunk" \
+    -F "diarise_audio=false" \
+    -F "is_async=false"
 ```
 
 # Insanely Fast Whisper API
