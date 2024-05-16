@@ -132,7 +132,7 @@ async def admin_key_auth_check(request: Request, call_next):
 
 
 @app.post("/")
-def root(
+async def root(
     url: str | None = None,
     file: UploadFile | None = None,
     task: str = Body(default="transcribe", enum=["transcribe", "translate"]),
@@ -163,8 +163,8 @@ def root(
     
     task_id = managed_task_id if managed_task_id is not None else str(uuid.uuid4())
     if file:
-            content = file.read()
-            url = np.frombuffer(content, dtype=np.uint8)  # Convert file content to numpy array
+        content = await  file.read()
+        url = np.frombuffer(content, dtype=np.uint8)  # Convert file content to numpy array
         
     try:
         resp = {}
