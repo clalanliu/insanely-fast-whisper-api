@@ -146,7 +146,10 @@ def root(
     managed_task_id: str | None = Body(default=None),
 ):
     
-    if url.lower().startswith("http") is False:
+    if url is None and file is None:
+        raise HTTPException(status_code=400, detail="Either URL or file must be provided")
+    
+    if url and url.lower().startswith("http") is False:
         raise HTTPException(status_code=400, detail="Invalid URL")
 
     if diarise_audio is True and hf_token is None:
