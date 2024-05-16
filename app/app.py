@@ -131,7 +131,8 @@ async def admin_key_auth_check(request: Request, call_next):
 
 @app.post("/")
 def root(
-    url: str = Body(),
+    url: str | None = None,
+    file: UploadFile | None = None,
     task: str = Body(default="transcribe", enum=["transcribe", "translate"]),
     language: str = Body(default="None"),
     batch_size: int = Body(default=64),
@@ -143,7 +144,7 @@ def root(
     is_async: bool = Body(default=False),
     managed_task_id: str | None = Body(default=None),
 ):
-    '''
+    
     if url.lower().startswith("http") is False:
         raise HTTPException(status_code=400, detail="Invalid URL")
 
@@ -154,9 +155,11 @@ def root(
         raise HTTPException(
             status_code=400, detail="Webhook is required for async tasks"
         )
-    '''
+    
     task_id = managed_task_id if managed_task_id is not None else str(uuid.uuid4())
-
+    if file:
+        content = file.read()
+        url = content  # Using 'url' to pass the byte content to process
     try:
         resp = {}
         if is_async is True:
