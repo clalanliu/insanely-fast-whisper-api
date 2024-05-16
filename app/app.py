@@ -34,6 +34,7 @@ pipe = pipeline(
     "automatic-speech-recognition",
     model=AutoModelForSpeechSeq2Seq.from_pretrained("distil-whisper/distil-large-v3", use_safetensors=True, attn_implementation="flash_attention_2"),
     feature_extractor=AutoProcessor.from_pretrained("distil-whisper/distil-large-v3").feature_extractor,
+    tokenizer=processor.tokenizer,
     max_new_tokens=128,
     torch_dtype=torch.float16,
     device="cuda:0",
