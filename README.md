@@ -1,3 +1,7 @@
+ ```
+curl -X POST 127.0.0.1:8000  -H "Content-Type: application/json" -d '{ "url": "http://...."}'
+```
+
 # Insanely Fast Whisper API
 An API to transcribe audio with [OpenAI's Whisper Large v3](https://huggingface.co/openai/whisper-large-v3)! Powered by 🤗 Transformers, Optimum & flash-attn
 
