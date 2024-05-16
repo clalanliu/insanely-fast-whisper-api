@@ -15,6 +15,7 @@ from transformers import pipeline, AutoModelForSpeechSeq2Seq,AutoProcessor
 from .diarization_pipeline import diarize
 import requests
 import asyncio
+import numpy as np
 import uuid
 
 
