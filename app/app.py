@@ -32,7 +32,9 @@ fly_machine_id = os.environ.get(
 
 pipe = pipeline(
     "automatic-speech-recognition",
-    model="openai/whisper-large-v3",
+    model=AutoModelForSpeechSeq2Seq.from_pretrained("distil-whisper/distil-large-v3", use_safetensors=True, attn_implementation="flash_attention_2"),
+    feature_extractor=processor.feature_extractor,
+    max_new_tokens=128,
     torch_dtype=torch.float16,
     device="cuda:0",
     model_kwargs=({"attn_implementation": "flash_attention_2"}),
