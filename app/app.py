@@ -162,7 +162,7 @@ def root(
     
     task_id = managed_task_id if managed_task_id is not None else str(uuid.uuid4())
     if file:
-            content = await file.read()
+            content = file.read()
             url = np.frombuffer(content, dtype=np.uint8)  # Convert file content to numpy array
         
     try:
