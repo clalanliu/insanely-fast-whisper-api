@@ -1,34 +1,45 @@
-FROM nvcr.io/nvidia/pytorch:24.01-py3
+# Use an official Python runtime as a parent image
+FROM nvidia/cuda:12.2.0-runtime-ubuntu20.04
 
-ENV PYTHON_VERSION=3.10
-ENV POETRY_VENV=/app/.venv
+# Set environment variables
+ENV DEBIAN_FRONTEND=noninteractive
+ENV PYTHONUNBUFFERED=1
 
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    python${PYTHON_VERSION}-venv \
+# Update and install necessary dependencies
+RUN apt-get update -y && \
+    apt-get upgrade -y && \
+    apt-get install -y --no-install-recommends \
+    ubuntu-drivers-common \
+    gcc \
+    nvidia-cuda-toolkit \
+    python3.11 \
+    python3-pip \
+    screen \
     ffmpeg \
-    && rm -rf /var/lib/apt/lists/*
+    git && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
 
-RUN python -m venv $POETRY_VENV \
-    && $POETRY_VENV/bin/pip install -U pip setuptools \
-    && $POETRY_VENV/bin/pip install poetry==1.7.1
+# Remove the EXTERNALLY-MANAGED file
+RUN rm /usr/lib/python3.*/EXTERNALLY-MANAGED
 
-ENV PATH="${PATH}:${POETRY_VENV}/bin"
+# Clone the repository
+RUN git clone https://github.com/clalanliu/insanely-fast-whisper-api.git /insanely-fast-whisper-api
 
-WORKDIR /app
+# Set working directory
+WORKDIR /insanely-fast-whisper-api
 
-COPY poetry.lock pyproject.toml ./
+# Install requirements from requirements.txt
+COPY requirements.txt .
+RUN python3.11 -m pip install --no-cache-dir -r requirements.txt
 
-RUN poetry config virtualenvs.in-project true
-RUN poetry install --no-root
+# Install Python dependencies
+RUN python3.11 -m pip install --no-cache-dir -U wheel ninja packaging && \
+    python3.11 -m pip install --no-cache-dir torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu121
 
-COPY . .
 
-RUN poetry install
-RUN $POETRY_VENV/bin/pip install -U wheel \
-    && $POETRY_VENV/bin/pip install ninja packaging
+# Expose the port uvicorn will run on
+EXPOSE 8000
 
-RUN $POETRY_VENV/bin/pip install flash-attn --no-build-isolation
-
-EXPOSE 9000
-
-CMD gunicorn --bind 0.0.0.0:9000 --workers 1 --timeout 0 app.app:app -k uvicorn.workers.UvicornWorker
+# Launch the application
+CMD ["python3.11", "-m", "uvicorn", "app.app:app", "--reload"]
