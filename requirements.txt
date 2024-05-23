@@ -143,3 +143,4 @@ websockets==11.0.3
 xxhash==3.4.1
 yarl==1.9.4
 python-multipart
+faster_whisper==1.0.2
