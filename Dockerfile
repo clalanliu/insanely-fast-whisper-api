@@ -36,4 +36,4 @@ RUN python3 -m pip install torch==2.3.0 torchvision torchaudio==2.3.0 --index-ur
 EXPOSE 8000
 
 # Launch the application
-CMD ["python3", "-m", "uvicorn", "app.app:app", "--reload", "--host 0.0.0.0", "--port 8000"]
+CMD ["python3", "-m", "uvicorn", "app.app:app", "--reload", "--host", "0.0.0.0", "--port", "8000"]
