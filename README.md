@@ -3,7 +3,7 @@
 curl -X POST 127.0.0.1:8000  -H "Content-Type: application/json" -d '{ "url": "https://replicate.delivery/pbxt/Jo9t4FqOSuJfla5FDD0TOgaLwIZiv0jETZXc5SWlL9ZtGFIg/1.wav"}'
 
 # file
-time curl -X POST "127.0.0.1:8000/" \
+time curl -X POST "http://127.0.0.1:8000/" \
     -H "Content-Type: multipart/form-data" \
     -F "file=@/home/ubuntu/test.wav" \
     -F "task=transcribe" \
