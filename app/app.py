@@ -149,8 +149,8 @@ async def root(
     task_id = managed_task_id if managed_task_id is not None else str(uuid.uuid4())
     if file:
         inputs = await file.read()
-        inputs = ffmpeg_read(inputs, pipe.feature_extractor.sampling_rate)
-        url = {"array": inputs, "sampling_rate": pipe.feature_extractor.sampling_rate}
+        inputs = ffmpeg_read(inputs, model.feature_extractor.sampling_rate)
+        url = {"array": inputs, "sampling_rate": model.feature_extractor.sampling_rate}
         
     try:
         resp = {}
