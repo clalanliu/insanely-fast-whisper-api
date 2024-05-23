@@ -51,8 +51,8 @@ class WebhookBody(BaseModel):
 
 
 def object_to_dict(obj):
-    return {attr: getattr(obj, attr) for attr in dir(obj) if not attr.startswith('_') and not callable(getattr(obj, attr))}
-
+    attributes = ['avg_logprob', 'start', 'end', 'id', 'no_speech_prob', 'text']
+    return {attr: getattr(obj, attr) for attr in attributes}
 
 def process(
     url: str,
@@ -73,8 +73,7 @@ def process(
         }
 
         segments, info = model.transcribe(url, beam_size=1, **generate_kwargs)
-        segments = [object_to_dict(segment) for segment in segments]
-        outputs = {'segments': segments, 'info': info}
+        outputs = segments, info
     except asyncio.CancelledError:
         errorMessage = "Task Cancelled"
     except Exception as e:
@@ -176,7 +175,7 @@ async def root(
             }
         else:
             running_tasks[task_id] = None
-            outputs = process(
+            segments, info = process(
                 url,
                 task,
                 language,
@@ -187,7 +186,9 @@ async def root(
                 task_id,
             )
             resp = {
-                "output": outputs,
+                "segments": [object_to_dict(segment) for segment in segments],
+                "language": info.language,
+                "language_probability": info.language_probability,
                 "status": "completed",
                 "task_id": task_id,
             }
