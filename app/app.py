@@ -17,8 +17,8 @@ import requests
 import asyncio
 import numpy as np
 import uuid
+from faster_whisper import WhisperModel
 from transformers.pipelines.audio_utils import ffmpeg_read
-
 
 admin_key = os.environ.get(
     "ADMIN_KEY",
@@ -32,21 +32,13 @@ hf_token = os.environ.get(
 fly_machine_id = os.environ.get(
     "FLY_MACHINE_ID",
 )
-processor = AutoProcessor.from_pretrained("distil-whisper/distil-large-v3")
-pipe = pipeline(
-    "automatic-speech-recognition",
-    model=AutoModelForSpeechSeq2Seq.from_pretrained("distil-whisper/distil-large-v3", 
-                                                    torch_dtype=torch.float16, 
-                                                    use_safetensors=True, 
-                                                    #attn_implementation="flash_attention_2"
-                                                   ),
-    feature_extractor=processor.feature_extractor,
-    tokenizer=processor.tokenizer,
-    max_new_tokens=128,
-    torch_dtype=torch.float16,
-    device="cuda:0",
-    #model_kwargs=({"attn_implementation": "flash_attention_2"}),
-)
+
+# define our torch configuration
+device = "cuda" 
+compute_type = "float16"
+
+# load model on GPU if available, else cpu
+model = WhisperModel("distil-large-v3", device=device, compute_type=compute_type)
 
 app = FastAPI()
 loop = asyncio.get_event_loop()
@@ -56,6 +48,10 @@ running_tasks = {}
 class WebhookBody(BaseModel):
     url: str
     header: dict[str, str] = {}
+
+
+def object_to_dict(obj):
+    return {attr: getattr(obj, attr) for attr in dir(obj) if not attr.startswith('_') and not callable(getattr(obj, attr))}
 
 
 def process(
@@ -76,21 +72,9 @@ def process(
             "language": None if language == "None" else language,
         }
 
-        outputs = pipe(
-            url,
-            chunk_length_s=30,
-            batch_size=batch_size,
-            generate_kwargs=generate_kwargs,
-            return_timestamps="word" if timestamp == "word" else True,
-        )
-
-        if diarise_audio is True:
-            speakers_transcript = diarize(
-                hf_token,
-                url,
-                outputs,
-            )
-            outputs["speakers"] = speakers_transcript
+        segments, info = model.transcribe(url, beam_size=1, **generate_kwargs)
+        segments = [object_to_dict(segment) for segment in segments]
+        outputs={'segments':segments, 'info':info}
     except asyncio.CancelledError:
         errorMessage = "Task Cancelled"
     except Exception as e:
