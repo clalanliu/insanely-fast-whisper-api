@@ -1,3 +1,4 @@
+import io
 import os
 from fastapi import (
     FastAPI,
@@ -11,8 +12,7 @@ from fastapi import (
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 import torch
-from transformers import pipeline, AutoModelForSpeechSeq2Seq,AutoProcessor
-from .diarization_pipeline import diarize
+from transformers import pipeline, AutoModelForSpeechSeq2Seq, AutoProcessor
 import requests
 import asyncio
 import numpy as np
@@ -34,7 +34,7 @@ fly_machine_id = os.environ.get(
 )
 
 # define our torch configuration
-device = "cuda" 
+device = "cuda"
 compute_type = "float16"
 
 # load model on GPU if available, else cpu
@@ -74,7 +74,7 @@ def process(
 
         segments, info = model.transcribe(url, beam_size=1, **generate_kwargs)
         segments = [object_to_dict(segment) for segment in segments]
-        outputs={'segments':segments, 'info':info}
+        outputs = {'segments': segments, 'info': info}
     except asyncio.CancelledError:
         errorMessage = "Task Cancelled"
     except Exception as e:
@@ -131,10 +131,10 @@ async def root(
     is_async: bool = Body(default=False),
     managed_task_id: str | None = Body(default=None),
 ):
-    
+
     if url is None and file is None:
         raise HTTPException(status_code=400, detail="Either URL or file must be provided")
-    
+
     if url and url.lower().startswith("http") is False:
         raise HTTPException(status_code=400, detail="Invalid URL")
 
@@ -145,13 +145,12 @@ async def root(
         raise HTTPException(
             status_code=400, detail="Webhook is required for async tasks"
         )
-    
+
     task_id = managed_task_id if managed_task_id is not None else str(uuid.uuid4())
     if file:
-        inputs = await file.read()
-        inputs = ffmpeg_read(inputs, model.feature_extractor.sampling_rate)
-        url = {"array": inputs, "sampling_rate": model.feature_extractor.sampling_rate}
-        
+        audio_bytes = await file.read()
+        url = io.BytesIO(audio_bytes)
+
     try:
         resp = {}
         if is_async is True:
